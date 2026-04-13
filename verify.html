@@ -316,6 +316,13 @@
     border-top: 1px solid rgba(255,255,255,0.05);
   }
 
+  .error-message-main {
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.5;
+    font-weight: 600;
+  }
+
   .error-message {
     font-size: 14px;
     color: var(--muted2);
@@ -411,7 +418,8 @@
       <div class="result-icon">✕</div>
       <div class="result-title">Not Found</div>
     </div>
-    <p id="errorMessage" class="error-message">No record found for this Certificate ID. Please double-check the ID or contact NextSkill Academy.</p>
+    <p id="errorMessage" class="error-message-main">No record found for this Certificate ID.</p>
+    <p class="error-message">Please double-check the ID or contact NextSkill Academy.</p>
   </section>
 
   <footer>&copy; NextSkill Academy · Private Training Program</footer>

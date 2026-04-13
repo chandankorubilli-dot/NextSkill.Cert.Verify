@@ -30,7 +30,7 @@
   function clearResults() {
     successCard.classList.add("hidden");
     errorCard.classList.add("hidden");
-    errorMessage.textContent = "No record found for this Certificate ID. Please double-check the ID or contact NextSkill Academy.";
+    errorMessage.textContent = "No record found for this Certificate ID.";
   }
 
   function showSuccess(data) {
@@ -43,7 +43,13 @@
   }
 
   function showError(message) {
-    errorMessage.textContent = message || "No record found";
+    var normalizedMessage = (message || "No record found").trim();
+
+    if (normalizedMessage === "No record found") {
+      normalizedMessage = "No record found for this Certificate ID.";
+    }
+
+    errorMessage.textContent = normalizedMessage;
     errorCard.classList.remove("hidden");
     successCard.classList.add("hidden");
   }
