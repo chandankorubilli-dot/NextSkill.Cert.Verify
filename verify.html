@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Certificate Verification - NextSkill Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080c12;
+    --surface: #0f1520;
+    --card: #131a27;
+    --border: #1e2a3a;
+    --gold: #c9a84c;
+    --gold-light: #e8c96a;
+    --gold-dim: rgba(201,168,76,0.12);
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.1);
+    --red: #ef4444;
+    --red-dim: rgba(239,68,68,0.1);
+    --text: #e8edf5;
+    --muted: #5a6880;
+    --muted2: #8a95a8;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(201,168,76,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 80% 80%, rgba(201,168,76,0.03) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 520px;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    text-align: center;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--gold-dim);
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: 999px;
+    padding: 6px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .badge-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--gold);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .title {
+    font-family: var(--serif);
+    font-size: 38px;
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+  }
+
+  .title span {
+    color: var(--gold);
+    font-style: italic;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: var(--muted2);
+    line-height: 1.6;
+    max-width: 360px;
+  }
+
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 4px 0;
+  }
+
+  .input-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .field-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .cert-input {
+    width: 100%;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-family: var(--sans);
+    font-size: 15px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+    letter-spacing: 0.5px;
+  }
+
+  .cert-input::placeholder { color: var(--muted); }
+  .cert-input:focus { border-color: var(--gold); }
+
+  .verify-btn {
+    width: 100%;
+    padding: 15px;
+    background: var(--gold);
+    color: #0a0a0a;
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 700;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    transition: background 0.2s, transform 0.1s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .verify-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+  }
+
+  .verify-btn:hover { background: var(--gold-light); }
+  .verify-btn:active { transform: scale(0.99); }
+  .verify-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+  .result-card {
+    border-radius: 14px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    border: 1px solid;
+  }
+
+  .hidden { display: none !important; }
+
+  .result-card.success {
+    background: var(--green-dim);
+    border-color: rgba(34,197,94,0.2);
+  }
+
+  .result-card.error {
+    background: var(--red-dim);
+    border-color: rgba(239,68,68,0.2);
+  }
+
+  .result-card.loading {
+    background: rgba(201,168,76,0.08);
+    border-color: rgba(201,168,76,0.25);
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .spinner {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid rgba(201,168,76,0.25);
+    border-top-color: var(--gold);
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .result-heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .result-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .success .result-icon {
+    background: rgba(34,197,94,0.15);
+    color: var(--green);
+  }
+
+  .error .result-icon {
+    background: rgba(239,68,68,0.15);
+    color: var(--red);
+  }
+
+  .result-title {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 600;
+  }
+
+  .success .result-title { color: var(--green); }
+  .error .result-title { color: var(--red); }
+
+  .info-table {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .info-row {
+    display: flex;
+    align-items: baseline;
+    padding: 11px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    gap: 16px;
+  }
+
+  .info-row:last-child { border-bottom: none; }
+
+  .info-key {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    min-width: 110px;
+    flex-shrink: 0;
+  }
+
+  .info-val {
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .info-val.highlight {
+    color: var(--gold-light);
+    font-size: 13px;
+    letter-spacing: 0.5px;
+  }
+
+  .disclaimer {
+    font-size: 11px;
+    color: var(--muted);
+    font-style: italic;
+    line-height: 1.6;
+    padding-top: 4px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .error-message {
+    font-size: 14px;
+    color: var(--muted2);
+    line-height: 1.6;
+  }
+
+  footer {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    padding-top: 8px;
+  }
+
+  @media (max-width: 560px) {
+    body { padding: 22px 12px; justify-content: flex-start; }
+    .container { gap: 18px; }
+    .title { font-size: 33px; }
+    .subtitle { font-size: 13px; }
+    .input-card, .result-card { padding: 18px 16px; }
+    .info-row { padding: 10px 12px; }
+    .info-key { min-width: 96px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <div class="badge">
+      <div class="badge-dot"></div>
+      NextSkill Academy
+    </div>
+    <h1 class="title">Certificate <span>Verification</span></h1>
+    <p class="subtitle">Enter your Certificate ID below to verify its authenticity</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="input-card">
+    <label class="field-label" for="certificateId">Certificate ID</label>
+    <input id="certificateId" class="cert-input" type="text" placeholder="e.g. NSAIPYC25001" autocomplete="off" />
+    <button id="verifyBtn" class="verify-btn" type="button">Verify Certificate</button>
+  </div>
+
+  <section id="loadingCard" class="result-card loading hidden" aria-live="polite">
+    <div class="spinner" aria-hidden="true"></div>
+    <p>Verifying certificate...</p>
+  </section>
+
+  <section id="successCard" class="result-card success hidden" aria-live="polite">
+    <div class="result-heading">
+      <div class="result-icon">✓</div>
+      <div class="result-title">Verified &amp; Valid</div>
+    </div>
+    <div class="info-table">
+      <div class="info-row">
+        <div class="info-key">Certificate ID</div>
+        <div class="info-val highlight" id="s_certificate_id">-</div>
+      </div>
+      <div class="info-row">
+        <div class="info-key">Issued To</div>
+        <div class="info-val" id="s_student_name">-</div>
+      </div>
+      <div class="info-row">
+        <div class="info-key">Issue Date</div>
+        <div class="info-val" id="s_issue_date">-</div>
+      </div>
+      <div class="info-row">
+        <div class="info-key">Program</div>
+        <div class="info-val" id="s_program_name">-</div>
+      </div>
+      <div class="info-row">
+        <div class="info-key">Batch</div>
+        <div class="info-val" id="s_batch_name">-</div>
+      </div>
+      <div class="info-row">
+        <div class="info-key">Issued By</div>
+        <div class="info-val" id="s_issued_by">-</div>
+      </div>
+      <div class="info-row">
+        <div class="info-key">Status</div>
+        <div class="info-val" id="s_status">-</div>
+      </div>
+    </div>
+    <div class="disclaimer">
+      Certificate confirms course completion only and does not indicate government or academic accreditation.
+    </div>
+  </section>
+
+  <section id="errorCard" class="result-card error hidden" aria-live="polite">
+    <div class="result-heading">
+      <div class="result-icon">✕</div>
+      <div class="result-title">Not Found</div>
+    </div>
+    <p id="errorMessage" class="error-message">No record found for this Certificate ID. Please double-check the ID or contact NextSkill Academy.</p>
+  </section>
+
+  <footer>&copy; NextSkill Academy · Private Training Program</footer>
+
+</div>
+
+<script src="assets/js/verify.js"></script>
+</body>
+</html>
