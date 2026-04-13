@@ -22,6 +22,60 @@
     status: document.getElementById("s_status")
   };
 
+  var MONTH_NAMES = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+
+  function formatIssueDate(value) {
+    if (!value && value !== 0) {
+      return "-";
+    }
+
+    var raw = String(value).trim();
+    var isoLike = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    var slashDate = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    var longDate = raw.match(/^[A-Za-z]{3}\s+[A-Za-z]{3}\s+(\d{1,2})\s+(\d{4})/);
+    var hasTimeComponent = /T\d{2}:\d{2}/.test(raw);
+
+    if (isoLike) {
+      var year = isoLike[1];
+      var monthIndex = Number(isoLike[2]) - 1;
+      var day = Number(isoLike[3]);
+
+      if (monthIndex >= 0 && monthIndex < 12 && day >= 1 && day <= 31) {
+        if (hasTimeComponent) {
+          var corrected = new Date(Date.UTC(Number(year), monthIndex, day + 1));
+
+          return corrected.getUTCDate() + " " + MONTH_NAMES[corrected.getUTCMonth()] + " " + corrected.getUTCFullYear();
+        }
+
+        return day + " " + MONTH_NAMES[monthIndex] + " " + year;
+      }
+    }
+
+    if (slashDate) {
+      var month = Number(slashDate[1]);
+      var slashDay = Number(slashDate[2]);
+      var slashYear = slashDate[3];
+
+      if (month >= 1 && month <= 12 && slashDay >= 1 && slashDay <= 31) {
+        return slashDay + " " + MONTH_NAMES[month - 1] + " " + slashYear;
+      }
+    }
+
+    if (longDate) {
+      return longDate[1] + " " + raw.split(/\s+/)[1] + " " + longDate[2];
+    }
+
+    var parsed = new Date(raw);
+    if (!isNaN(parsed.getTime())) {
+      return parsed.getUTCDate() + " " + MONTH_NAMES[parsed.getUTCMonth()] + " " + parsed.getUTCFullYear();
+    }
+
+    return raw;
+  }
+
   function setLoading(isLoading) {
     verifyBtn.disabled = isLoading;
     loadingCard.classList.toggle("hidden", !isLoading);
@@ -35,7 +89,11 @@
 
   function showSuccess(data) {
     Object.keys(successFields).forEach(function (key) {
-      successFields[key].textContent = data[key] || "-";
+      var value = data[key] || "-";
+      if (key === "issue_date") {
+        value = formatIssueDate(data[key]);
+      }
+      successFields[key].textContent = value;
     });
 
     successCard.classList.remove("hidden");
