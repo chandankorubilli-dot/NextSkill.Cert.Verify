@@ -1,8 +1,10 @@
 (function () {
   "use strict";
 
-  var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzVUPydWW1yF0kYajzufH-Y7Llz2VN1oQEyxhMqTYgK7oVafPUO0Do0pYoA_ZVO8ESZFg/exec";
+  var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyQM3heOvHQycTjXE8vSqkO8VY_tLk65ALiTDc3TNzvj2br9QdBra8lBMM8Ip_JYgv4bw/exec";
   var REQUEST_TIMEOUT_MS = 15000;
+  var MAX_RETRIES = 2;
+  var RETRY_DELAY_MS = 500;
 
   var input = document.getElementById("certificateId");
   var verifyBtn = document.getElementById("verifyBtn");
@@ -112,7 +114,13 @@
     successCard.classList.add("hidden");
   }
 
-  function jsonpVerify(certificateId) {
+  function wait(ms) {
+    return new Promise(function (resolve) {
+      setTimeout(resolve, ms);
+    });
+  }
+
+  function jsonpVerifyOnce(certificateId, attempt) {
     return new Promise(function (resolve, reject) {
       var callbackName = "jsonpVerifyCallback_" + Date.now() + "_" + Math.floor(Math.random() * 1000000);
       var script = document.createElement("script");
@@ -167,13 +175,35 @@
       var query = [
         "action=verify",
         "id=" + encodeURIComponent(certificateId),
-        "callback=" + encodeURIComponent(callbackName)
+        "callback=" + encodeURIComponent(callbackName),
+        "_ts=" + Date.now(),
+        "_attempt=" + attempt
       ].join("&");
 
       script.src = SCRIPT_URL + "?" + query;
       script.async = true;
       document.body.appendChild(script);
     });
+  }
+
+  function jsonpVerify(certificateId) {
+    var attempt = 0;
+
+    function runAttempt() {
+      return jsonpVerifyOnce(certificateId, attempt)
+        .catch(function (error) {
+          var isNetworkType = /Unable to reach verification service|timed out/i.test(String(error && error.message));
+
+          if (isNetworkType && attempt < MAX_RETRIES) {
+            attempt += 1;
+            return wait(RETRY_DELAY_MS).then(runAttempt);
+          }
+
+          throw error;
+        });
+    }
+
+    return runAttempt();
   }
 
   function runVerification() {
